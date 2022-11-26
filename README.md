@@ -1,3 +1,7 @@
-# Ansible Tutorial
+# Ansible playbook to deploy my K8S cluster
 
-Ansible tutorial based on "Learn Linux TV: Getting started with Ansible" YouTube series [playlist](https://www.youtube.com/playlist?list=PLT98CRl2KxKEUHie1m24-wkyHpEsa4Y70)
+Based on Ansbile 20.04
+
+Sources:
+* Learn Linux TV video: Manually build a K8S cluster in [Proxmox](https://www.youtube.com/watch?v=U1VzcjCB_sY) (based on Ubuntue 22.04)
+* Automated in Ansible taking some inspiration from [here](https://www.linuxsysadmins.com/install-kubernetes-cluster-with-ansible/).
