@@ -1,0 +1,27 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+    - name: update repo cache (Ubuntu)
+      tags: always
+      apt:
+        update_cache: yes
+      changed_when: false
+
+- hosts: all
+  become: true
+  roles:
+    - base
+
+- hosts: k8s_controller
+  become: true
+  roles:
+    - k8s_controller
+
+- hosts: k8s_nodes
+  become: true
+  roles:
+    - k8s_nodes
+

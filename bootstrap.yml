@@ -1,0 +1,41 @@
+---
+
+# needs to be run with --ask-become-pass
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+    - name: install updates (Ubuntu)
+      tags: always
+      apt:
+        upgrade: dist
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true
+  tasks:
+
+  # add new user to all hosts
+  - name: create ansible user
+    tags: always
+    user:
+      name: ansible
+      groups: root
+
+  - name: add ssh key for ansible
+    tags: always
+    authorized_key:
+      user: ansible
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINbglM+Y94uo8jWayNpL28Yj0heHf9acymPq+8ySqkd2 ansible"
+
+  # sudo without a password
+  - name: add sudoers file for ansible
+    tags: always
+    copy:
+      src: sudoer_ansible
+      dest: /etc/sudoers.d/ansible
+      owner: root
+      group: root
+      mode: 0440
