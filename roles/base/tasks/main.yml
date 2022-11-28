@@ -12,6 +12,7 @@
     state: latest
 
 - name: create containerd directory
+  tags: containderd
   file:
     path: /etc/containerd
     state: directory
@@ -20,6 +21,7 @@
     mode: 0755
 
 - name: copy containerd config.toml
+  tags: containerd
   copy:
     src: containerd_config
     dest: /etc/containerd/config.toml
@@ -27,10 +29,27 @@
     group: root
     mode: 0644
 
-- name: Restart containerd
+- name: enable containerd service, and enable persistently
+  tags: containerd
+  service:
+    name: containerd
+    enabled: yes
+
+- name: restart containerd
+  tags: containerd
   service:
     name: containerd
     state: restarted
+
+- name: make swap inactive
+  command: swapoff -a
+
+- name: remove swap entry from /etc/fstab.
+  lineinfile:
+    path: /etc/fstab
+    regexp: swap
+    state: absent
+  register: swap_disabled
 
 - name: change sysctl config to allow IP forwarding
   lineinfile:
@@ -43,6 +62,7 @@
   command: sudo sysctl --system
 
 - name: create k8s.conf module
+  tags: k8s
   copy:
     dest: /etc/modules-load.d/k8s.conf
     content: 'br_netfilter'
@@ -51,26 +71,35 @@
     mode: 0644
 
 - name: import the k8s repo apt key
+  tags: k8s
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: add Google GPG key
   apt_key:
     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
 
 - name: add k8s repo
-  apt_repository:
-    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
-    state: present
-    filename: kubernetes
-    mode: 0600
+  command: echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 - name: update packages
   apt:
     update_cache: true
 
 - name: install k8s packages
+  tags: k8s
   apt:
     name:
       - kubeadm
       - kubectl
       - kubelet
     state: present
+
+- name: enable kubelet service, and enable persistently
+  service:
+    name: kubelet
+    enabled: yes
+
 # https://www.linuxsysadmins.com/install-kubernetes-cluster-with-ansible/
