@@ -1,0 +1,63 @@
+- name: intializing Kubernetes cluster"
+  tags: skip
+  command: sudo kubeadm init --control-plane-endpoint "{{ k8s_controller }}" --node-name "k8s-controller" --pod-network-cidr=10.244.0.0/16
+  run_once: true
+  ignore_errors: true
+  delegate_to: "{{ k8s_controller }}"
+- pause: seconds=30
+
+- name: create directory for Kube config (ansible user)
+  file:
+    path: /home/{{ansible_user }}/.kube
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+
+- name: create directory for Kube config (personal user)
+  file:
+    path: /home/mick/.kube
+    state: directory
+    owner: mick
+    group: mick
+    mode: 0755
+
+- name: copy /etc/kubernetes/admin.conf to Ansible user home dir
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/mick/.kube/config
+    remote_src: yes
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: copy /etc/kubernetes/admin.conf to personal user home dir
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/{{ ansible_user }}/.kube/config
+    remote_src: yes
+    owner: mick
+    group: mick
+    mode: '0644'
+
+- name: remove .kube cache directory
+  file:
+    path: /home/{{ ansible_user }}/.kube/cache
+    state: absent
+
+- name: create Calico pod network
+  become_user: ansible
+  command:  kubectl apply -f "{{ pod_network_manifest_file }}"
+- pause: seconds=30
+
+- name: Get token for joining nodes with Kuberentes controller
+  shell: kubeadm token create  --print-join-command
+  register: kubernetes_join_command
+
+- name: return join cmd to stdout
+  debug:
+    msg: "{{ kubernetes_join_command.stdout }}"
+
+- name: copy Kubernetes join command to localhost (/tmp/kubernetes_join_command)
+  become: false
+  local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }}" dest="/tmp/kubernetes_join_command" mode=0777
