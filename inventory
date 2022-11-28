@@ -1,8 +1,8 @@
 [k8s_controller]
-192.168.1.111 k8s_controller=192.168.1.111 pod_network_manifest_file=https://docs.projectcalico.org/v3.16/manifests/calico.yaml
+192.168.1.113 k8s_controller=192.168.1.113 pod_network_manifest_file=https://docs.projectcalico.org/v3.16/manifests/calico.yaml
 
 [k8s_nodes]
-192.168.1.15
-192.168.1.88
-192.168.1.135
+192.168.1.8
+192.168.1.100
+192.168.1.147
 

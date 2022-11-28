@@ -4,42 +4,30 @@
     user: ansible
     key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINbglM+Y94uo8jWayNpL28Yj0heHf9acymPq+8ySqkd2 ansible"
 
-- name: install containerd
-  tags: containerd
+- name: Add Docker’s official GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: add Docker repo
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+    filename: docker
+    mode: 0600
+
+- name: install Docker Engine
   apt:
     name:
-      - containerd
-    state: latest
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
 
-- name: create containerd directory
-  tags: containderd
-  file:
-    path: /etc/containerd
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
-
-- name: copy containerd config.toml
-  tags: containerd
-  copy:
-    src: containerd_config
-    dest: /etc/containerd/config.toml
-    owner: root
-    group: root
-    mode: 0644
-
-- name: enable containerd service, and enable persistently
-  tags: containerd
+- name: enable docker service
   service:
-    name: containerd
+    name: docker
     enabled: yes
-
-- name: restart containerd
-  tags: containerd
-  service:
-    name: containerd
-    state: restarted
 
 - name: make swap inactive
   command: swapoff -a
@@ -101,5 +89,3 @@
   service:
     name: kubelet
     enabled: yes
-
-# https://www.linuxsysadmins.com/install-kubernetes-cluster-with-ansible/

@@ -1,4 +1,4 @@
-- name: intializing Kubernetes cluster"
+- name: intializing Kubernetes cluster
   tags: skip
   command: sudo kubeadm init --control-plane-endpoint "{{ k8s_controller }}" --node-name "k8s-controller" --pod-network-cidr=10.244.0.0/16
   run_once: true
@@ -45,12 +45,12 @@
     path: /home/{{ ansible_user }}/.kube/cache
     state: absent
 
-- name: create Calico pod network
+- name: create pod network
   become_user: ansible
   command:  kubectl apply -f "{{ pod_network_manifest_file }}"
 - pause: seconds=30
 
-- name: Get token for joining nodes with Kuberentes controller
+- name: get token for joining nodes with Kuberentes controller
   shell: kubeadm token create  --print-join-command
   register: kubernetes_join_command
 
