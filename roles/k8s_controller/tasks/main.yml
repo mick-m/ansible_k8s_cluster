@@ -1,3 +1,9 @@
+- name: install acl
+  apt:
+    name:
+      - acl
+    state: present
+
 - name: intializing Kubernetes cluster
   tags: skip
   command: sudo kubeadm init --control-plane-endpoint "{{ k8s_controller }}" --node-name "k8s-controller" --pod-network-cidr=10.244.0.0/16
@@ -29,7 +35,7 @@
     remote_src: yes
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0644'
+    mode: 0644
 
 - name: copy /etc/kubernetes/admin.conf to personal user home dir
   copy:
@@ -38,7 +44,7 @@
     remote_src: yes
     owner: mick
     group: mick
-    mode: '0644'
+    mode: 0644
 
 - name: remove .kube cache directory
   file:
@@ -47,6 +53,8 @@
 
 - name: create pod network
   become_user: ansible
+  become: yes
+  ignore_errors: true
   command:  kubectl apply -f "{{ pod_network_manifest_file }}"
 - pause: seconds=30
 

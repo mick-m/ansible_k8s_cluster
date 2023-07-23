@@ -9,7 +9,7 @@ $ ansible-playbook -u mick --private-key=xxx --ask-become-pass bootstrap.yml
 
 2. Run role tasks  across cluster (base, k8s_controller, k8s_nodes)
 ```
-$ ansible-playbook site.yml
+$ ansible-playbook -u ansible site.yml
 ```
 
 Sources
